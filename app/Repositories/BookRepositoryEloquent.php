@@ -22,4 +22,9 @@ class BookRepositoryEloquent extends BaseRepository implements BookRepository
     {
         return Book::class;
     }
+
+    public function save(Book $book)
+    {
+        $this->model->create($book->toArray());
+    }
 }

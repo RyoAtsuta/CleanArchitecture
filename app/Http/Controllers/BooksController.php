@@ -7,8 +7,10 @@ use Illuminate\Http\Request;
 use App\Http\Requests;
 use App\Http\Requests\BookCreateRequest;
 use App\Http\Requests\BookUpdateRequest;
-use App\Repositories\BookRepository;
 use App\Http\Controllers\Controller;
+use App\UseCases\Book\BookIndexInputPortInterface;
+use App\UseCases\Book\BookCreateInputPortInterface;
+use App\DataStructures\InputData\Book\BookCreateInputData;
 
 /**
  * Class BooksController.
@@ -18,18 +20,26 @@ use App\Http\Controllers\Controller;
 class BooksController extends Controller
 {
     /**
-     * @var BookRepository
+     * @var BookIndexInputPortInterface
      */
-    protected $repository;
+    private $indexInputPort;
+
+    /**
+     * @var BookCreateInputPortInterface
+     */
+    private $createInputPort;
 
     /**
      * BooksController constructor.
-     *
-     * @param BookRepository $repository
+     * @param BookIndexInputPortInterface $indexInputPort
+     * @param BookCreateInputPortInterface $createInputPort
      */
-    public function __construct(BookRepository $repository)
-    {
-        $this->repository = $repository;
+    public function __construct(
+        BookIndexInputPortInterface $indexInputPort,
+        BookCreateInputPortInterface $createInputPort
+    ) {
+        $this->indexInputPort = $indexInputPort;
+        $this->createInputPort = $createInputPort;
     }
 
     /**
@@ -39,13 +49,17 @@ class BooksController extends Controller
      */
     public function index()
     {
-        $books = $this->repository->all();
+        $books = $this->indexInputPort->handle();
 
         return view('books.index', compact('books'));
     }
 
     /**
      * Store a newly created resource in storage.
+     * 
+     * Note:
+     * - ここだけCleanArchitectureに近づけてやってみたがやはりやりすぎ感
+     * - PresenterからViewModelを無理矢理returnさせるという暴挙
      *
      * @param  BookCreateRequest $request
      *
@@ -53,7 +67,11 @@ class BooksController extends Controller
      */
     public function store(BookCreateRequest $request)
     {
+        $inputData = new BookCreateInputData($request->input('title'));
 
+        $viewModel = $this->createInputPort->handle($inputData);
+
+        return redirect()->route('book.create', ['id' => $viewModel->id]);
     }
 
     /**
@@ -75,51 +93,6 @@ class BooksController extends Controller
      */
     public function show($id)
     {
-        $book = $this->repository->find($id);
-    
         return view('books.show', compact('book'));
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int $id
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        $book = $this->repository->find($id);
-
-        return view('books.edit', compact('book'));
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  BookUpdateRequest $request
-     * @param  string            $id
-     *
-     * @return Response
-     *
-     * @throws \Prettus\Validator\Exceptions\ValidatorException
-     */
-    public function update(BookUpdateRequest $request, $id)
-    {
-
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int $id
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        $deleted = $this->repository->delete($id);
-
-        return redirect()->back()->with('message', 'Book deleted.');
     }
 }

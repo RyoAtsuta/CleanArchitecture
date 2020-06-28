@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Entities\Book;
 use Prettus\Repository\Contracts\RepositoryInterface;
 
 /**
@@ -11,5 +12,5 @@ use Prettus\Repository\Contracts\RepositoryInterface;
  */
 interface BookRepository extends RepositoryInterface
 {
-    //
+    public function save(Book $book);
 }

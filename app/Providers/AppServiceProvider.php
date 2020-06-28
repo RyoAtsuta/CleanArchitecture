@@ -23,6 +23,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        $this->app->bind(\App\UseCases\Book\BookCreateInputPortInterface::class, \App\UseCases\Book\BookCreateInteractor::class);
+        $this->app->bind(\App\Presenters\Book\BookCreateOutputPortInterface::class, \App\Presenters\Book\BookCreatePresenter::class);
+        $this->app->bind(\App\UseCases\Book\BookIndexInputPortInterface::class, \App\UseCases\Book\BookIndexInteractor::class);
+        $this->app->bind(\App\Presenters\Book\BookIndexOutputPortInterface::class, \App\Presenters\Book\BookIndexPresenter::class);
     }
 }
